@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <title>{{ recipe.title }} - 영양성분표</title>
+  <style>
+    body { font-family: system-ui, Apple SD Gothic Neo, sans-serif; margin: 24px; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 20px; max-width: 560px; }
+    h1 { margin: 0 0 8px; font-size: 22px; }
+    .muted { color: #666; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: right; }
+    th:first-child, td:first-child { text-align: left; }
+    .row-strong td { font-weight: 600; }
+    .foot { margin-top: 12px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>{{ recipe.title }} 영양성분</h1>
+  <div class="muted">
+    총중량: {{ result.total_weight_g }} g · 제공량: {{ result.servings }}회
+    (1회 ≈ {{ result.piece_weight_g|floatformat:0 }} g)
+    · 손실률: {{ result.yield_rate|floatformat:0 }}%
+    </div>
+  <table>
+    <tr class="row-strong"><td>항목</td><td>총량</td><td>1회 제공량</td></tr>
+    <tr><td>열량(kcal)</td><td>{{ result.totals.kcal }}</td><td>{{ result.per_serving.kcal }}</td></tr>
+    <tr><td>탄수화물(g)</td><td>{{ result.totals.carbs }}</td><td>{{ result.per_serving.carbs }}</td></tr>
+    <tr><td>단백질(g)</td><td>{{ result.totals.protein }}</td><td>{{ result.per_serving.protein }}</td></tr>
+    <tr><td>지방(g)</td><td>{{ result.totals.fat }}</td><td>{{ result.per_serving.fat }}</td></tr>
+    <tr><td>당류(g)</td><td>{{ result.totals.sugar }}</td><td>{{ result.per_serving.sugar }}</td></tr>
+    <tr><td>나트륨(mg)</td><td>{{ result.totals.sodium }}</td><td>{{ result.per_serving.sodium }}</td></tr>
+  </table>
+  <div class="foot">※ 1회 제공량 = 총량 / 제공횟수. 표시는 소수점 1자리 반올림.</div>
+</div>
+</body>
+</html>

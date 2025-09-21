@@ -1,0 +1,6 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+{{ yield_presets|json_script:"yield-presets-json" }}
+{% endblock %}
