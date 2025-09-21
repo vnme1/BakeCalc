@@ -1,4 +1,4 @@
-# nutrition/serializers.py (기존 코드에 알레르기 정보만 추가)
+# nutrition/serializers.py (가격 정보 추가)
 from rest_framework import serializers
 from .models import Ingredient, Recipe, RecipeItem
 
@@ -25,10 +25,19 @@ class RecipeItemSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     items = RecipeItemSerializer(many=True, read_only=True)
     allergens = serializers.SerializerMethodField()
+    share_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ['id', 'title', 'servings', 'notes', 'piece_weight_g', 'yield_rate', 'items', 'allergens']
+        fields = ['id', 'title', 'category', 'servings', 'notes', 'piece_weight_g', 
+                 'yield_rate', 'public_id', 'items', 'allergens', 'share_url']
     
     def get_allergens(self, obj):
         return obj.get_allergens()
+    
+    def get_share_url(self, obj):
+        if obj.public_id:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(f'/p/{obj.public_id}')
+        return None

@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ recipe.title }} - 영양성분표</title>
+  <style>
+    body { 
+      font-family: system-ui, Apple SD Gothic Neo, sans-serif; 
+      margin: 0; 
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      overflow: hidden;
+      max-width: 600px;
+      width: 100%;
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .header h1 { 
+      margin: 0 0 8px; 
+      font-size: 28px; 
+      font-weight: 700;
+    }
+    
+    .header .subtitle { 
+      opacity: 0.9; 
+      font-size: 16px;
+      margin: 0;
+    }
+    
+    .content {
+      padding: 24px;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .info-item {
+      background: #f8fafc;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .info-label {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    
+    .info-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    table { 
+      width: 100%; 
+      border-collapse: collapse; 
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    th, td { 
+      padding: 12px 16px; 
+      text-align: right; 
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    th:first-child, td:first-child { 
+      text-align: left; 
+    }
+    
+    thead th {
+      background: #1e293b;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    
+    tbody tr:hover {
+      background: #e2e8f0;
+      transition: background 0.2s;
+    }
+    
+    .allergen-section {
+      margin-top: 24px;
+      padding: 16px;
+      background: #fef2f2;
+      border-radius: 8px;
+      border-left: 4px solid #ef4444;
+    }
+    
+    .allergen-title {
+      font-weight: 600;
+      color: #dc2626;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .allergen-icon {
+      width: 20px;
+      height: 20px;
+      background: #dc2626;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .allergen-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    .allergen-tag {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .no-allergens {
+      color: #059669;
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .footer {
+      background: #f1f5f9;
+      padding: 16px 24px;
+      font-size: 12px;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.5;
+    }
+    
+    .qr-info {
+      text-align: center;
+      margin-top: 16px;
+      padding: 12px;
+      background: #eff6ff;
+      border-radius: 8px;
+      color: #1e40af;
+      font-size: 13px;
+    }
+    
+    @media (max-width: 640px) {
+      body { padding: 8px; }
+      .header { padding: 20px 16px; }
+      .content { padding: 16px; }
+      .header h1 { font-size: 24px; }
+      table { font-size: 14px; }
+      th, td { padding: 8px 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>{{ recipe.title }}</h1>
+      <p class="subtitle">영양성분표</p>
+    </div>
+    
+    <div class="content">
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">총중량</div>
+          <div class="info-value">{{ result.total_weight_g }}g</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">제공량</div>
+          <div class="info-value">{{ result.servings }}회</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">1회 분량</div>
+          <div class="info-value">{{ result.piece_weight_g|floatformat:0 }}g</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">수율</div>
+          <div class="info-value">{{ result.yield_rate|floatformat:0 }}%</div>
+        </div>
+      </div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th>영양성분</th>
+            <th>총량</th>
+            <th>1회 제공량</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>열량(kcal)</strong></td>
+            <td>{{ result.totals.kcal }}</td>
+            <td>{{ result.per_serving.kcal }}</td>
+          </tr>
+          <tr>
+            <td>탄수화물(g)</td>
+            <td>{{ result.totals.carbs }}</td>
+            <td>{{ result.per_serving.carbs }}</td>
+          </tr>
+          <tr>
+            <td>단백질(g)</td>
+            <td>{{ result.totals.protein }}</td>
+            <td>{{ result.per_serving.protein }}</td>
+          </tr>
+          <tr>
+            <td>지방(g)</td>
+            <td>{{ result.totals.fat }}</td>
+            <td>{{ result.per_serving.fat }}</td>
+          </tr>
+          <tr>
+            <td>당류(g)</td>
+            <td>{{ result.totals.sugar }}</td>
+            <td>{{ result.per_serving.sugar }}</td>
+          </tr>
+          <tr>
+            <td>나트륨(mg)</td>
+            <td>{{ result.totals.sodium }}</td>
+            <td>{{ result.per_serving.sodium }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="allergen-section">
+        <div class="allergen-title">
+          <span class="allergen-icon">!</span>
+          알레르기 유발요소
+        </div>
+        {% if allergens %}
+          <div class="allergen-list">
+            {% for allergen in allergens %}
+              <span class="allergen-tag">{{ allergen }}</span>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="no-allergens">
+            <span>✅</span> 알레르기 유발요소 없음
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="qr-info">
+        📱 이 페이지는 QR 코드를 통해 공유되었습니다
+      </div>
+    </div>
+
+    <div class="footer">
+      ※ 표시값은 소수점 1자리 반올림 기준<br>
+      ※ 알레르기 정보는 원재료 기준이며, 제조 과정에서 교차 오염 가능성이 있습니다
+    </div>
+  </div>
+</body>
+</html>

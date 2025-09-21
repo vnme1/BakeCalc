@@ -82,6 +82,24 @@
     box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25) !important;
 }
 
+/* 원가 계산 버튼 */
+.cost-btn:hover {
+    background: #f59e0b !important;
+    border-color: #f59e0b !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.25) !important;
+}
+
+/* QR 공유 버튼 */
+.qr-btn:hover {
+    background: #8b5cf6 !important;
+    border-color: #8b5cf6 !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.25) !important;
+}
+
 /* 클릭 효과 */
 .clean-btn:active {
     transform: translateY(0px) !important;

@@ -1,5 +1,7 @@
-# nutrition/models.py (한글 필드명 적용)
+# nutrition/models.py (원가 계산 필드 추가)
 from django.db import models
+from django.utils.crypto import get_random_string
+import string
 
 class Ingredient(models.Model):
     brand = models.CharField(max_length=100, blank=True, verbose_name='브랜드')
@@ -13,6 +15,8 @@ class Ingredient(models.Model):
     sodium_per100g = models.DecimalField(max_digits=8, decimal_places=2, default=0, verbose_name='나트륨(100g당)')
     density_g_per_ml = models.DecimalField(max_digits=6, decimal_places=3, null=True, blank=True, 
                                          verbose_name='밀도(g/mL)', help_text='액체 재료의 밀도 (선택사항)')
+    price_per_100g = models.DecimalField(max_digits=10, decimal_places=2, default=0, 
+                                       verbose_name='가격(100g당)', help_text='100g 기준 구매 단가 (원)')
     
     # 알레르기 정보 필드들
     contains_milk = models.BooleanField(default=False, verbose_name='유제품 포함')
@@ -40,6 +44,11 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return f"{self.brand} {self.name}".strip()
+
+def generate_public_id():
+    """8자리 랜덤 공개 ID 생성"""
+    chars = string.ascii_lowercase + string.digits
+    return get_random_string(8, chars)
 
 class Recipe(models.Model):
     class Category(models.TextChoices):
@@ -78,10 +87,17 @@ class Recipe(models.Model):
                                           verbose_name='굽기 전 중량(g)')
     post_bake_weight_g = models.DecimalField(max_digits=8, decimal_places=1, null=True, blank=True, 
                                            verbose_name='굽기 후 중량(g)')
+    public_id = models.CharField(max_length=16, unique=True, blank=True, 
+                               verbose_name='공개 ID', help_text='QR 공유용 고유 ID')
 
     class Meta:
         verbose_name = '레시피'
         verbose_name_plural = '레시피 목록'
+
+    def save(self, *args, **kwargs):
+        if not self.public_id:
+            self.public_id = generate_public_id()
+        super().save(*args, **kwargs)
 
     def get_allergens(self):
         """레시피에 포함된 모든 알레르기 유발요소 반환"""

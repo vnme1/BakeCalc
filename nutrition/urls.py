@@ -2,8 +2,8 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .views import IngredientViewSet, RecipeViewSet
-from .admin import YIELD_PRESETS  # ← admin.py에서 정의한 프리셋 dict import
+from .views import IngredientViewSet, RecipeViewSet, recipe_cost_api
+from .admin import YIELD_PRESETS
 
 router = DefaultRouter()
 router.register(r'ingredients', IngredientViewSet, basename='ingredient')
@@ -18,5 +18,6 @@ def yield_presets(request):
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('yield-presets/', yield_presets, name='yield-presets'),  # ← 이 줄만 추가
+    path('yield-presets/', yield_presets, name='yield-presets'),
+    path('recipes/<int:recipe_id>/cost-simple', recipe_cost_api, name='recipe-cost-simple'),
 ]

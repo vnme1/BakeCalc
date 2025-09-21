@@ -1,4 +1,4 @@
-# nutrition/admin.py (한글화 개선 버전)
+# nutrition/admin.py (가격 필드 및 원가 버튼 추가)
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
@@ -13,7 +13,7 @@ YIELD_PRESETS = {
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('brand', 'name', 'kcal_per100g', 'carbs_per100g', 'protein_per100g', 'fat_per100g', 'get_allergen_display')
+    list_display = ('brand', 'name', 'kcal_per100g', 'price_per_100g', 'get_allergen_display')
     search_fields = ('brand', 'name')
     list_filter = ('contains_milk', 'contains_egg', 'contains_gluten', 'contains_nuts')
     
@@ -29,6 +29,10 @@ class IngredientAdmin(admin.ModelAdmin):
                 ('sugar_per100g', 'sodium_per100g')
             ),
             'description': '100g 기준 영양성분을 입력하세요.'
+        }),
+        ('가격 정보', {
+            'fields': ('price_per_100g',),
+            'description': '100g 기준 구매 단가를 입력하세요.'
         }),
         ('알레르기 정보', {
             'fields': (
@@ -65,7 +69,7 @@ class RecipeItemInline(admin.TabularInline):
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'servings', 'piece_weight_g', 'yield_rate', 'get_allergen_display', 'label_buttons')
+    list_display = ('title', 'category', 'servings', 'piece_weight_g', 'yield_rate', 'get_allergen_display', 'action_buttons')
     list_filter = ('category',)
     search_fields = ('title',)
     
@@ -84,6 +88,7 @@ class RecipeAdmin(admin.ModelAdmin):
         ('실측 데이터 (선택)', {
             'fields': (
                 ('pre_bake_weight_g', 'post_bake_weight_g'),
+                'public_id'
             ),
             'classes': ['collapse'],
             'description': '실제 측정한 굽기 전후 중량을 입력하면 수율이 자동 계산됩니다.'
@@ -102,11 +107,17 @@ class RecipeAdmin(admin.ModelAdmin):
         return format_html('<span style="color: #48bb78;">없음</span>')
     get_allergen_display.short_description = '알레르기 정보'
 
-    def label_buttons(self, obj):
-        """라벨 버튼들"""
+    def action_buttons(self, obj):
+        """액션 버튼들 (라벨, PDF, 원가, QR)"""
         if obj.id:
-            html_url = reverse('recipe_label', args=[obj.id])
+            label_url = reverse('recipe_label', args=[obj.id])
             pdf_url = reverse('recipe_label_pdf', args=[obj.id])
+            
+            # public_id가 없으면 생성
+            if not obj.public_id:
+                obj.save()  # public_id 자동 생성
+            
+            qr_url = reverse('recipe_public', args=[obj.public_id]) if obj.public_id else '#'
             
             return format_html(
                 '''
@@ -117,17 +128,23 @@ class RecipeAdmin(admin.ModelAdmin):
                     <a href="{}" class="clean-btn pdf-btn" title="PDF 파일로 다운로드">
                         📄 PDF
                     </a>
+                    <a href="#" onclick="showCostInfo({})" class="clean-btn cost-btn" title="원가 정보 보기">
+                        💰 원가
+                    </a>
+                    <a href="{}" target="_blank" class="clean-btn qr-btn" title="QR 공유 페이지">
+                        📱 QR
+                    </a>
                 </div>
                 ''',
-                html_url, pdf_url
+                label_url, pdf_url, obj.id, qr_url
             )
         return '-'
     
-    label_buttons.short_description = '라벨 생성'
-    label_buttons.allow_tags = True
+    action_buttons.short_description = '액션'
+    action_buttons.allow_tags = True
 
     class Media:
-        js = ('admin/nutrition/recipe_presets.js',)
+        js = ('admin/nutrition/recipe_presets.js', 'admin/nutrition/cost_popup.js')
         css = {
             'all': ('admin/nutrition/custom_admin.css',)
         }
