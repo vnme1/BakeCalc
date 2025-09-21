@@ -117,7 +117,8 @@ class RecipeAdmin(admin.ModelAdmin):
             if not obj.public_id:
                 obj.save()  # public_id 자동 생성
             
-            qr_url = reverse('recipe_public', args=[obj.public_id]) if obj.public_id else '#'
+            # QR 관리 페이지로 연결 (공개 페이지가 아닌!)
+            qr_management_url = f'/p/{obj.public_id}/qr' if obj.public_id else '#'
             
             return format_html(
                 '''
@@ -131,15 +132,14 @@ class RecipeAdmin(admin.ModelAdmin):
                     <a href="#" onclick="showCostInfo({})" class="clean-btn cost-btn" title="원가 정보 보기">
                         💰 원가
                     </a>
-                    <a href="{}" target="_blank" class="clean-btn qr-btn" title="QR 공유 페이지">
+                    <a href="{}" target="_blank" class="clean-btn qr-btn" title="QR 코드 관리 페이지">
                         📱 QR
                     </a>
                 </div>
                 ''',
-                label_url, pdf_url, obj.id, qr_url
+                label_url, pdf_url, obj.id, qr_management_url
             )
         return '-'
-    
     action_buttons.short_description = '액션'
     action_buttons.allow_tags = True
 

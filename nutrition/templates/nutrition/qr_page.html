@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{{ recipe.title }} - QR 코드 관리</title>
+  <style>
+    body { 
+      font-family: system-ui, Apple SD Gothic Neo, sans-serif; 
+      margin: 0; 
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      overflow: hidden;
+      max-width: 600px;
+      width: 100%;
+      animation: fadeInUp 0.6s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .header h1 { 
+      margin: 0 0 8px; 
+      font-size: 28px; 
+      font-weight: 700;
+    }
+    
+    .header .subtitle { 
+      opacity: 0.9; 
+      font-size: 16px;
+      margin: 0;
+    }
+    
+    .content {
+      padding: 32px 24px;
+    }
+    
+    .qr-section {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .qr-container {
+      display: inline-block;
+      padding: 20px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 2px dashed #cbd5e1;
+      margin: 16px 0;
+    }
+    
+    .qr-image {
+      max-width: 256px;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+    
+    .url-section {
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+      overflow: hidden;
+      word-wrap: break-word;
+    }
+    
+    .url-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    
+    .url-input {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 13px;
+      background: white;
+      color: #1e293b;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+    
+    .button-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #6b7280;
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background: #4b5563;
+      transform: translateY(-1px);
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin: 24px 0;
+    }
+    
+    .info-card {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .info-label {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    
+    .info-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+    
+    .usage-guide {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 24px 0;
+    }
+    
+    .usage-title {
+      font-weight: 600;
+      color: #1e40af;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .usage-steps {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .usage-steps li {
+      padding: 8px 0;
+      color: #1e40af;
+      font-size: 14px;
+      position: relative;
+      padding-left: 24px;
+    }
+    
+    .usage-steps li:before {
+      content: counter(step-counter);
+      counter-increment: step-counter;
+      position: absolute;
+      left: 0;
+      top: 8px;
+      background: #3b82f6;
+      color: white;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    
+    .usage-steps {
+      counter-reset: step-counter;
+    }
+    
+    @media (max-width: 640px) {
+      body { padding: 8px; }
+      .header { padding: 20px 16px; }
+      .content { padding: 24px 16px; }
+      .header h1 { font-size: 24px; }
+      .button-group { grid-template-columns: 1fr; }
+      .qr-image { max-width: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>{{ recipe.title }}</h1>
+      <p class="subtitle">📱 QR 코드 관리</p>
+    </div>
+    
+    <div class="content">
+      <!-- QR 코드 이미지 -->
+      <div class="qr-section">
+        <h3 style="margin: 0 0 16px; color: #1e293b;">QR 코드</h3>
+        <div class="qr-container">
+          <img src="{{ qr_image_url }}" alt="QR 코드" class="qr-image" />
+        </div>
+        
+        <div class="button-group">
+          <a href="{{ qr_image_url }}" download="{{ recipe.title }}_QR.png" class="btn btn-primary">
+            📥 QR 이미지 다운로드
+          </a>
+          <a href="{{ qr_url }}" target="_blank" class="btn btn-success">
+            👀 라벨 페이지 확인
+          </a>
+          <button onclick="copyToClipboard('{{ qr_url }}')" class="btn btn-secondary">
+            📋 URL 복사
+          </button>
+        </div>
+      </div>
+      
+      <!-- URL 정보 -->
+      <div class="url-section">
+        <div class="url-label">공유 URL</div>
+        <input type="text" value="{{ qr_url }}" readonly class="url-input" id="shareUrl" />
+      </div>
+      
+      <!-- 정보 카드 -->
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-label">공개 ID</div>
+          <div class="info-value">{{ public_id }}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">QR 크기</div>
+          <div class="info-value">256×256px</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">파일 형식</div>
+          <div class="info-value">PNG</div>
+        </div>
+      </div>
+      
+      <!-- 사용법 가이드 -->
+      <div class="usage-guide">
+        <div class="usage-title">
+          <span>💡</span>
+          QR 코드 사용법
+        </div>
+        <ol class="usage-steps">
+          <li>위 "QR 이미지 다운로드" 버튼을 클릭하여 PNG 파일 저장</li>
+          <li>케이크 포장지나 매장 테이블에 QR 코드 부착</li>
+          <li>고객이 QR 코드를 스캔하면 영양성분 페이지로 이동</li>
+          <li>투명한 영양정보 제공으로 고객 신뢰도 향상</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(function() {
+        alert('URL이 클립보드에 복사되었습니다!');
+      }, function(err) {
+        // 폴백: 수동 선택
+        const input = document.getElementById('shareUrl');
+        input.select();
+        input.setSelectionRange(0, 99999);
+        document.execCommand('copy');
+        alert('URL이 클립보드에 복사되었습니다!');
+      });
+    }
+  </script>
+</body>
+</html>

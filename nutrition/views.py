@@ -4,6 +4,9 @@ from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, JsonResponse
+import qrcode
+from io import BytesIO
+import base64
 from .models import Ingredient, Recipe, RecipeItem
 from .serializers import IngredientSerializer, RecipeSerializer, RecipeItemSerializer
 from .services.nutrition import compute_recipe_nutrition
@@ -127,3 +130,48 @@ def recipe_cost_api(request, recipe_id: int):
     margin = float(request.GET.get('margin', 150))
     cost_data = compute_recipe_cost(recipe, margin_percent=margin)
     return JsonResponse(cost_data)
+
+def recipe_qr_code(request, public_id: str):
+    """QR 코드 이미지 생성 및 다운로드"""
+    recipe = get_object_or_404(Recipe, public_id=public_id)
+    
+    # QR 코드에 들어갈 URL (절대 경로)
+    qr_url = request.build_absolute_uri(f'/p/{public_id}')
+    
+    # QR 코드 생성
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(qr_url)
+    qr.make(fit=True)
+    
+    # 이미지 생성 (흰 배경, 검은 QR)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # PNG 이미지로 HTTP 응답 생성
+    buffer = BytesIO()
+    img.save(buffer, format='PNG')
+    buffer.seek(0)
+    
+    response = HttpResponse(buffer.getvalue(), content_type="image/png")
+    response['Content-Disposition'] = f'attachment; filename="{recipe.title}_QR.png"'
+    return response
+
+def recipe_qr_page(request, public_id: str):
+    """QR 코드 관리 페이지 (미리보기 + 다운로드)"""
+    recipe = get_object_or_404(Recipe, public_id=public_id)
+    
+    # QR URL 생성
+    qr_url = request.build_absolute_uri(f'/p/{public_id}')
+    qr_image_url = request.build_absolute_uri(f'/p/{public_id}/qr.png')
+    
+    context = {
+        'recipe': recipe,
+        'qr_url': qr_url,
+        'qr_image_url': qr_image_url,
+        'public_id': public_id,
+    }
+    return render(request, 'nutrition/qr_page.html', context)
