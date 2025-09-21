@@ -1,4 +1,4 @@
-/* nutrition/static/admin/nutrition/clean_admin.css */
+/* nutrition/static/admin/nutrition/custom_admin.css */
 
 /* 전체 테이블 텍스트 중앙 정렬 + 높이 최적화 */
 .change-list #result_list tbody td {
@@ -11,10 +11,19 @@
     line-height: 1.4 !important;
 }
 
-/* 제목은 왼쪽 정렬 유지 + 글자 크기 개선 + 높이 맞춤 */
+/* 제목은 중앙 정렬 + 글자 크기 개선 + 높이 맞춤 */
 .change-list #result_list tbody td:first-child,
 .field-title {
-    text-align: left !important;
+    text-align: center !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #1f2937 !important;
+    vertical-align: middle !important;
+    height: 36px !important;
+    line-height: 36px !important;
+}
+.change-list .filtered table tbody th {
+    text-align: center !important;
     font-size: 15px !important;
     font-weight: 500 !important;
     color: #1f2937 !important;
@@ -185,3 +194,55 @@
 .change-list .results {
     margin-top: 10px !important;
 }
+
+/* ✨ 필드셋 스타일 개선 */
+.form-row {
+    margin-bottom: 12px !important;
+}
+
+.form-row .field-box {
+    margin-bottom: 8px !important;
+}
+
+/* help_text 스타일 개선 */
+.help {
+    font-size: 12px !important;
+    color: #6b7280 !important;
+    margin-top: 4px !important;
+    font-style: italic !important;
+}
+
+/* 필드셋 description 스타일 */
+.fieldset .description {
+    background-color: #f8fafc !important;
+    border-left: 4px solid #3b82f6 !important;
+    padding: 8px 12px !important;
+    margin-bottom: 12px !important;
+    font-size: 13px !important;
+    color: #374151 !important;
+    border-radius: 0 4px 4px 0 !important;
+}
+
+/* 인라인 테이블 개선 */
+.tabular.inline-related {
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.tabular.inline-related thead th {
+    background-color: #f8fafc !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+/* 인라인 테이블 행 스타일 */
+.tabular.inline-related tbody tr {
+    border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.tabular.inline-related tbody tr:hover {
+    background-color: #fafbfc !important;
+}
+
