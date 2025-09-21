@@ -1,3 +1,4 @@
+# nutrition/models.py (help_text 위치 수정)
 from django.db import models
 
 class Ingredient(models.Model):
@@ -10,11 +11,29 @@ class Ingredient(models.Model):
     fat_per100g     = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     sugar_per100g   = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     sodium_per100g  = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    # 선택: 밀도(g/mL). 없으면 mL 입력 불가 처리/경고
     density_g_per_ml = models.DecimalField(max_digits=6, decimal_places=3, null=True, blank=True)
+    
+    # 알레르기 정보 필드들
+    contains_milk = models.BooleanField(default=False, verbose_name='유제품')
+    contains_egg = models.BooleanField(default=False, verbose_name='계란')
+    contains_gluten = models.BooleanField(default=False, verbose_name='글루텐')
+    contains_nuts = models.BooleanField(default=False, verbose_name='견과류')
+    contains_soy = models.BooleanField(default=False, verbose_name='대두')
+    contains_shellfish = models.BooleanField(default=False, verbose_name='갑각류')
 
     class Meta:
         unique_together = [('brand', 'name')]
+
+    def get_allergens(self):
+        """알레르기 유발요소 목록 반환"""
+        allergens = []
+        if self.contains_milk: allergens.append('유제품')
+        if self.contains_egg: allergens.append('계란')
+        if self.contains_gluten: allergens.append('글루텐')
+        if self.contains_nuts: allergens.append('견과류')
+        if self.contains_soy: allergens.append('대두')
+        if self.contains_shellfish: allergens.append('갑각류')
+        return allergens
 
     def __str__(self):
         return f"{self.brand} {self.name}".strip()
@@ -45,16 +64,22 @@ class Recipe(models.Model):
     category = models.CharField(max_length=32, choices=Category.choices, blank=True)
     servings = models.PositiveIntegerField(default=1)
     notes = models.TextField(blank=True)
-    # ▼ 추가: 1조각(1회 제공) 중량을 직접 지정하고 싶을 때 사용 (선택)
     piece_weight_g = models.DecimalField(max_digits=8, decimal_places=1, null=True, blank=True)
-    yield_rate = models.DecimalField(max_digits=5, decimal_places=2, default=100,
-        help_text="굽고 식힌 뒤 남는 비율(%) — 예: 92")
-    # 실측 기반 자동계산(선택)
+    
+    # help_text 제거하여 위치 문제 해결
+    yield_rate = models.DecimalField(max_digits=5, decimal_places=2, default=100)
+    
     pre_bake_weight_g = models.DecimalField(max_digits=8, decimal_places=1, null=True, blank=True)
     post_bake_weight_g = models.DecimalField(max_digits=8, decimal_places=1, null=True, blank=True)
 
+    def get_allergens(self):
+        """레시피에 포함된 모든 알레르기 유발요소 반환"""
+        allergens = set()
+        for item in self.items.select_related('ingredient').all():
+            allergens.update(item.ingredient.get_allergens())
+        return sorted(allergens)
+
     def clean(self):
-        # 실측값이 둘 다 있으면 yield_rate 자동 산출
         if self.pre_bake_weight_g and self.post_bake_weight_g and float(self.pre_bake_weight_g) > 0:
             self.yield_rate = (float(self.post_bake_weight_g) / float(self.pre_bake_weight_g)) * 100
             
@@ -64,7 +89,7 @@ class Recipe(models.Model):
 class RecipeItem(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='items')
     ingredient = models.ForeignKey(Ingredient, on_delete=models.PROTECT)
-    amount_g = models.DecimalField(max_digits=9, decimal_places=2)  # 사용량(그램)
+    amount_g = models.DecimalField(max_digits=9, decimal_places=2)
     amount_ml = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
 
     def __str__(self):

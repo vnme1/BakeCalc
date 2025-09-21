@@ -1,0 +1,187 @@
+/* nutrition/static/admin/nutrition/clean_admin.css */
+
+/* 전체 테이블 텍스트 중앙 정렬 + 높이 최적화 */
+.change-list #result_list tbody td {
+    vertical-align: middle !important;
+    text-align: center !important;
+    padding: 8px 10px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+}
+
+/* 제목은 왼쪽 정렬 유지 + 글자 크기 개선 + 높이 맞춤 */
+.change-list #result_list tbody td:first-child,
+.field-title {
+    text-align: left !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #1f2937 !important;
+    vertical-align: middle !important;
+    height: 36px !important;
+    line-height: 36px !important;
+}
+
+/* 깔끔한 버튼 컨테이너 + 가로 배치 강제 */
+.clean-actions {
+    display: flex !important;
+    gap: 6px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    height: 36px !important;
+    flex-direction: row !important;
+}
+
+/* 심플하고 모던한 버튼 스타일 + 더 컴팩트 */
+.clean-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    padding: 5px 10px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #e5e7eb !important;
+    border-radius: 5px !important;
+    text-decoration: none !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    white-space: nowrap !important;
+    min-width: 60px !important;
+    justify-content: center !important;
+    height: 26px !important;
+}
+
+/* 라벨 보기 버튼 */
+.view-btn:hover {
+    background: #10b981 !important;
+    border-color: #10b981 !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.25) !important;
+}
+
+/* PDF 다운로드 버튼 */
+.pdf-btn:hover {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.25) !important;
+}
+
+/* 클릭 효과 */
+.clean-btn:active {
+    transform: translateY(0px) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 반응형 디자인 - 큰 화면에서는 가로 유지 */
+@media (max-width: 768px) {
+    .clean-actions {
+        flex-direction: column !important;
+        gap: 3px !important;
+        height: auto !important;
+    }
+    
+    .clean-btn {
+        width: 100% !important;
+        padding: 4px 8px !important;
+        font-size: 10px !important;
+        min-width: 60px !important;
+        height: 24px !important;
+    }
+}
+
+/* 데스크톱에서는 항상 가로 배치 */
+@media (min-width: 769px) {
+    .clean-actions {
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+    }
+}
+
+/* 테이블 전체 디자인 개선 */
+.change-list #result_list {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.change-list #result_list thead th {
+    background: #f8fafc !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    padding: 10px 8px !important;
+    border-bottom: 2px solid #e5e7eb !important;
+    font-size: 13px !important;
+}
+
+.change-list #result_list tbody tr {
+    border-bottom: 1px solid #f3f4f6 !important;
+}
+
+.change-list #result_list tbody tr:hover {
+    background-color: #fafbfc !important;
+}
+
+.change-list #result_list tbody tr:nth-child(even) {
+    background-color: #ffffff !important;
+}
+
+.change-list #result_list tbody tr:nth-child(odd) {
+    background-color: #fcfcfd !important;
+}
+
+/* 라벨 컬럼 스타일 + 컴팩트 (정확한 필드명) */
+.field-label_buttons {
+    width: 160px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    padding: 4px !important;
+}
+
+/* 호버 효과로 행 전체 강조 */
+.change-list #result_list tbody tr:hover .clean-btn {
+    border-color: #d1d5db !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* 폰트 개선 */
+.change-list #result_list {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* 숫자 데이터 정렬 개선 + 글자 크기 */
+.field-servings,
+.field-piece_weight_g,
+.field-yield_rate {
+    text-align: center !important;
+    font-weight: 500 !important;
+    color: #1f2937 !important;
+    font-size: 14px !important;
+}
+
+/* 카테고리 스타일 + 글자 크기 */
+.field-category {
+    color: #6b7280 !important;
+    font-style: italic !important;
+    font-size: 13px !important;
+}
+
+/* 알레르기 표시 강조 + 글자 크기 */
+.field-get_allergen_display {
+    color: #dc2626 !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+}
+
+/* 전체 페이지 여백 개선 */
+.change-list .results {
+    margin-top: 10px !important;
+}

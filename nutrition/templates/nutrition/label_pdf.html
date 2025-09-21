@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <title>{{ recipe.title }} - 영양성분표 PDF</title>
+  <style>
+    body {
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+      margin: 0;
+      padding: 20px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    
+    .label {
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 400px;
+      margin: 0 auto 30px;
+      background: white;
+    }
+    
+    .header {
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 0 5px;
+      color: #333;
+    }
+    
+    .subtitle {
+      font-size: 14px;
+      font-weight: 600;
+      color: #666;
+      margin: 0;
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      font-size: 11px;
+      color: #555;
+    }
+    
+    .nutrition-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    
+    .nutrition-table th,
+    .nutrition-table td {
+      padding: 6px 8px;
+      text-align: right;
+      border-bottom: 1px solid #eee;
+      font-size: 11px;
+    }
+    
+    .nutrition-table th:first-child,
+    .nutrition-table td:first-child {
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    .nutrition-table thead th {
+      background-color: #f5f5f5;
+      font-weight: 600;
+      border-bottom: 2px solid #ddd;
+    }
+    
+    .allergen-section {
+      border-top: 2px solid #e74c3c;
+      padding-top: 10px;
+      margin-top: 15px;
+    }
+    
+    .allergen-title {
+      font-weight: 600;
+      color: #e74c3c;
+      font-size: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .allergen-icon {
+      width: 14px;
+      height: 14px;
+      background-color: #e74c3c;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: bold;
+    }
+    
+    .allergen-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    
+    .allergen-tag {
+      background-color: #fff5f5;
+      border: 1px solid #fed7d7;
+      color: #c53030;
+      padding: 3px 6px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    
+    .no-allergens {
+      color: #48bb78;
+      font-style: italic;
+      font-size: 11px;
+    }
+    
+    .footer {
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+      font-size: 9px;
+      color: #666;
+      text-align: center;
+    }
+    
+    /* 프린트를 위한 스타일 */
+    @media print {
+      body { margin: 0; }
+      .label { 
+        border: 2px solid #000; 
+        box-shadow: none;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 메인 라벨 -->
+  <div class="label">
+    <div class="header">
+      <h1 class="title">{{ recipe.title }}</h1>
+      <p class="subtitle">영양성분표</p>
+    </div>
+    
+    <div class="info-row">
+      <span>총중량: {{ result.total_weight_g }}g</span>
+      <span>제공량: {{ result.servings }}회</span>
+    </div>
+    <div class="info-row">
+      <span>1회 제공량: {{ result.piece_weight_g|floatformat:0 }}g</span>
+      <span>손실률: {{ result.yield_rate|floatformat:0 }}%</span>
+    </div>
+    
+    <table class="nutrition-table">
+      <thead>
+        <tr>
+          <th>영양성분</th>
+          <th>총량</th>
+          <th>1회 제공량</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>열량(kcal)</td>
+          <td>{{ result.totals.kcal }}</td>
+          <td>{{ result.per_serving.kcal }}</td>
+        </tr>
+        <tr>
+          <td>탄수화물(g)</td>
+          <td>{{ result.totals.carbs }}</td>
+          <td>{{ result.per_serving.carbs }}</td>
+        </tr>
+        <tr>
+          <td>단백질(g)</td>
+          <td>{{ result.totals.protein }}</td>
+          <td>{{ result.per_serving.protein }}</td>
+        </tr>
+        <tr>
+          <td>지방(g)</td>
+          <td>{{ result.totals.fat }}</td>
+          <td>{{ result.per_serving.fat }}</td>
+        </tr>
+        <tr>
+          <td>당류(g)</td>
+          <td>{{ result.totals.sugar }}</td>
+          <td>{{ result.per_serving.sugar }}</td>
+        </tr>
+        <tr>
+          <td>나트륨(mg)</td>
+          <td>{{ result.totals.sodium }}</td>
+          <td>{{ result.per_serving.sodium }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="allergen-section">
+      <div class="allergen-title">
+        <span class="allergen-icon">!</span>
+        알레르기 유발요소
+      </div>
+      {% if allergens %}
+        <div class="allergen-list">
+          {% for allergen in allergens %}
+            <span class="allergen-tag">{{ allergen }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="no-allergens">알레르기 유발요소 없음</div>
+      {% endif %}
+    </div>
+
+    <div class="footer">
+      ※ 표시값은 소수점 1자리 반올림 기준<br>
+      ※ 제조 과정에서 교차 오염 가능성 있음
+    </div>
+  </div>
+</body>
+</html>

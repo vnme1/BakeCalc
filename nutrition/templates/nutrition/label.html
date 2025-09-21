@@ -12,6 +12,53 @@
     th, td { padding: 8px; border-bottom: 1px solid #eee; text-align: right; }
     th:first-child, td:first-child { text-align: left; }
     .row-strong td { font-weight: 600; }
+    
+    /*  알레르기 섹션 스타일 */
+    .allergen-section {
+      border-top: 2px solid #e74c3c;
+      padding-top: 12px;
+      margin-top: 16px;
+    }
+    .allergen-title {
+      font-weight: 600;
+      color: #e74c3c;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .allergen-icon {
+      width: 16px;
+      height: 16px;
+      background-color: #e74c3c;
+      border-radius: 50%;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    .allergen-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .allergen-tag {
+      background-color: #fff5f5;
+      border: 1px solid #fed7d7;
+      color: #c53030;
+      padding: 4px 8px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .no-allergens {
+      color: #48bb78;
+      font-style: italic;
+      font-size: 14px;
+    }
+    
     .foot { margin-top: 12px; font-size: 12px; color: #666; }
   </style>
 </head>
@@ -22,7 +69,8 @@
     총중량: {{ result.total_weight_g }} g · 제공량: {{ result.servings }}회
     (1회 ≈ {{ result.piece_weight_g|floatformat:0 }} g)
     · 손실률: {{ result.yield_rate|floatformat:0 }}%
-    </div>
+  </div>
+  
   <table>
     <tr class="row-strong"><td>항목</td><td>총량</td><td>1회 제공량</td></tr>
     <tr><td>열량(kcal)</td><td>{{ result.totals.kcal }}</td><td>{{ result.per_serving.kcal }}</td></tr>
@@ -32,7 +80,40 @@
     <tr><td>당류(g)</td><td>{{ result.totals.sugar }}</td><td>{{ result.per_serving.sugar }}</td></tr>
     <tr><td>나트륨(mg)</td><td>{{ result.totals.sodium }}</td><td>{{ result.per_serving.sodium }}</td></tr>
   </table>
-  <div class="foot">※ 1회 제공량 = 총량 / 제공횟수. 표시는 소수점 1자리 반올림.</div>
+
+  <!--  알레르기 정보 섹션 -->
+  <div class="allergen-section">
+    <div class="allergen-title">
+      <span class="allergen-icon">!</span>
+      알레르기 유발요소
+    </div>
+    {% if allergens %}
+      <div class="allergen-list">
+        {% for allergen in allergens %}
+          <span class="allergen-tag">{{ allergen }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-allergens">알레르기 유발요소 없음</div>
+    {% endif %}
+  </div>
+
+  <!--  PDF 다운로드 버튼 -->
+  <div style="text-align: center; margin: 16px 0;">
+    <a href="{% url 'recipe_label_pdf' recipe.id %}" 
+       style="display: inline-block; background-color: #3498db; color: white; 
+              padding: 10px 20px; text-decoration: none; border-radius: 6px; 
+              font-weight: 500; transition: background-color 0.2s;"
+       onmouseover="this.style.backgroundColor='#2980b9'"
+       onmouseout="this.style.backgroundColor='#3498db'">
+      📄 PDF 다운로드
+    </a>
+  </div>
+
+  <div class="foot">
+    ※ 1회 제공량 = 총량 / 제공횟수. 표시는 소수점 1자리 반올림.<br>
+    ※ 알레르기 정보는 원재료 기준이며, 제조 과정에서 교차 오염 가능성이 있습니다.
+  </div>
 </div>
 </body>
 </html>
