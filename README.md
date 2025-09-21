@@ -43,27 +43,28 @@
 
 ---
 
-## 🚀 설치 & 실행 방법
-
-### 1. 저장소 클론
-```bash
-git clone https://github.com/USERNAME/bakecalc.git
-cd bakecalc
-
 2. 가상환경 생성 및 활성화
 python -m venv .venv
 # Windows PowerShell
 .\.venv\Scripts\Activate.ps1
 
+---
+
 3. 의존성 설치
 pip install -r requirements.txt
+
+---
 
 4. DB 마이그레이션
 python manage.py makemigrations
 python manage.py migrate
 
+---
+
 5. 관리자 계정 생성
 python manage.py createsuperuser
+
+---
 
 6. 개발 서버 실행
 python manage.py runserver
@@ -71,38 +72,28 @@ python manage.py runserver
 
 → 접속: http://127.0.0.1:8000/
 
+---
+
 📚 사용 예시
 Ingredient 등록 (예: 서울우유 생크림)
-
 kcal_per100g: 335
-
 carbs_per100g: 3
-
 protein_per100g: 2
-
 fat_per100g: 35
-
 sugar_per100g: 3
-
 sodium_per100g: 27
-
 density_g_per_ml: 1.0
 
 Recipe 등록
-
 title: 생크림케이크
-
 piece_weight_g: 75
-
 yield_rate: 92
 
 API 호출
 
 GET /api/recipes/1/nutrition
 
-
 응답(JSON 예시)
-
 {
   "recipe_id": 1,
   "title": "생크림케이크",
@@ -128,6 +119,8 @@ GET /api/recipes/1/nutrition
   }
 }
 
+---
+
 📦 향후 계획 (Todo)
 
  원가 계산 (재료 단가 → 총원가/1회 원가/권장가 계산)
@@ -139,6 +132,8 @@ GET /api/recipes/1/nutrition
  팀 계정/권한 관리
 
  공공 식품 DB 연동 (자동완성 지원)
+
+---
 
 git remote add origin https://github.com/vnme1/BakeCalc.git
 git branch -M main
