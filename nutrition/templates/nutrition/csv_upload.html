@@ -416,6 +416,7 @@
         });
 
         // 업로드 처리
+        // 업로드 처리 부분의 fetch URL 수정
         document.getElementById('uploadBtn').addEventListener('click', function () {
             if (!selectedFile) return;
 
@@ -428,7 +429,7 @@
             document.getElementById('resultSection').style.display = 'none';
             document.getElementById('uploadBtn').disabled = true;
 
-            // 가짜 진행률 (실제 파일 업로드 진행률은 별도 구현 필요)
+            // 가짜 진행률
             let progress = 0;
             const progressInterval = setInterval(() => {
                 progress += Math.random() * 30;
@@ -436,56 +437,56 @@
                 document.getElementById('progressFill').style.width = progress + '%';
             }, 200);
 
-            // AJAX 요청
-            fetch('/upload/csv/', {
+            // AJAX 요청 - URL을 /upload/csv/process/로 변경
+            fetch('/upload/csv/process/', {  // ← 이 부분이 수정됨
                 method: 'POST',
                 body: formData,
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
                 }
             })
-                .then(response => response.json())
-                .then(data => {
-                    clearInterval(progressInterval);
-                    document.getElementById('progressFill').style.width = '100%';
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                document.getElementById('progressFill').style.width = '100%';
 
-                    setTimeout(() => {
-                        document.getElementById('progressSection').style.display = 'none';
-                        document.getElementById('resultSection').style.display = 'block';
-                        document.getElementById('uploadBtn').disabled = false;
-
-                        if (data.success) {
-                            document.getElementById('resultSection').className = 'result-section result-success';
-                            let message = `✅ ${data.message}`;
-
-                            if (data.processing_errors && data.processing_errors.length > 0) {
-                                message += `\n\n⚠️ 일부 행에서 오류가 발생했습니다:\n${data.processing_errors.slice(0, 5).join('\n')}`;
-                                if (data.processing_errors.length > 5) {
-                                    message += `\n... 외 ${data.processing_errors.length - 5}개`;
-                                }
-                            }
-
-                            document.getElementById('resultMessage').innerHTML = message.replace(/\n/g, '<br>');
-                        } else {
-                            document.getElementById('resultSection').className = 'result-section result-error';
-                            let errorMessage = `❌ ${data.message}`;
-
-                            if (data.errors && data.errors.length > 0) {
-                                errorMessage += `\n\n오류 상세:\n${data.errors.slice(0, 10).join('\n')}`;
-                            }
-
-                            document.getElementById('resultMessage').innerHTML = errorMessage.replace(/\n/g, '<br>');
-                        }
-                    }, 500);
-                })
-                .catch(error => {
-                    clearInterval(progressInterval);
+                setTimeout(() => {
                     document.getElementById('progressSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
-                    document.getElementById('resultSection').className = 'result-section result-error';
-                    document.getElementById('resultMessage').textContent = `네트워크 오류: ${error.message}`;
                     document.getElementById('uploadBtn').disabled = false;
-                });
+
+                    if (data.success) {
+                        document.getElementById('resultSection').className = 'result-section result-success';
+                        let message = `✅ ${data.message}`;
+
+                        if (data.processing_errors && data.processing_errors.length > 0) {
+                            message += `\n\n⚠️ 일부 행에서 오류가 발생했습니다:\n${data.processing_errors.slice(0, 5).join('\n')}`;
+                            if (data.processing_errors.length > 5) {
+                                message += `\n... 외 ${data.processing_errors.length - 5}개`;
+                            }
+                        }
+
+                        document.getElementById('resultMessage').innerHTML = message.replace(/\n/g, '<br>');
+                    } else {
+                        document.getElementById('resultSection').className = 'result-section result-error';
+                        let errorMessage = `❌ ${data.message}`;
+
+                        if (data.errors && data.errors.length > 0) {
+                            errorMessage += `\n\n오류 상세:\n${data.errors.slice(0, 10).join('\n')}`;
+                        }
+
+                        document.getElementById('resultMessage').innerHTML = errorMessage.replace(/\n/g, '<br>');
+                    }
+                }, 500);
+            })
+            .catch(error => {
+                clearInterval(progressInterval);
+                document.getElementById('progressSection').style.display = 'none';
+                document.getElementById('resultSection').style.display = 'block';
+                document.getElementById('resultSection').className = 'result-section result-error';
+                document.getElementById('resultMessage').textContent = `네트워크 오류: ${error.message}`;
+                document.getElementById('uploadBtn').disabled = false;
+            });
         });
 
         // 템플릿 다운로드
