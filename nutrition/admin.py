@@ -55,6 +55,12 @@ class IngredientAdmin(admin.ModelAdmin):
         return '-'
     get_allergen_display.short_description = '알레르기 정보'
 
+    # 👇 이 함수가 새로 추가된 부분입니다!
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['csv_upload_url'] = '/upload/csv/'
+        return super().changelist_view(request, extra_context)
+
     class Media:
         css = {
             'all': ('admin/nutrition/custom_admin.css',)

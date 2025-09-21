@@ -1,17 +1,22 @@
-# nutrition/views.py (원가 계산 및 QR 공유 기능 추가)
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, JsonResponse
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 import qrcode
 from io import BytesIO
 import base64
+import os
 from .models import Ingredient, Recipe, RecipeItem
 from .serializers import IngredientSerializer, RecipeSerializer, RecipeItemSerializer
 from .services.nutrition import compute_recipe_nutrition
 from .services.cost import compute_recipe_cost
 from .services.pdf import generate_pdf_label, create_pdf_response
+from .services.csv_upload import process_csv_data, bulk_create_ingredients
 
 class IngredientViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all().order_by('brand','name')
@@ -175,3 +180,70 @@ def recipe_qr_page(request, public_id: str):
         'public_id': public_id,
     }
     return render(request, 'nutrition/qr_page.html', context)
+
+@staff_member_required
+def csv_upload_page(request):
+    """CSV 업로드 페이지"""
+    return render(request, 'nutrition/csv_upload.html')
+
+@staff_member_required
+@require_http_methods(["POST"])
+# @csrf_exempt
+def csv_upload_process(request):
+    """CSV 파일 처리"""
+    
+    if 'csv_file' not in request.FILES:
+        return JsonResponse({
+            'success': False,
+            'message': '파일이 선택되지 않았습니다.'
+        })
+    
+    file = request.FILES['csv_file']
+    update_existing = request.POST.get('update_existing') == 'true'
+    
+    # 파일 확장자 검증
+    allowed_extensions = ['.csv', '.xlsx', '.xls']
+    file_extension = os.path.splitext(file.name)[1].lower()
+    
+    if file_extension not in allowed_extensions:
+        return JsonResponse({
+            'success': False,
+            'message': 'CSV 또는 Excel 파일만 업로드 가능합니다.'
+        })
+    
+    # 파일 크기 제한 (10MB)
+    if file.size > 10 * 1024 * 1024:
+        return JsonResponse({
+            'success': False,
+            'message': '파일 크기는 10MB를 초과할 수 없습니다.'
+        })
+    
+    try:
+        # 파일 읽기
+        file_content = file.read()
+        
+        # 데이터 처리
+        processed_data, processing_errors = process_csv_data(file_content, file_extension)
+        
+        if not processed_data and processing_errors:
+            return JsonResponse({
+                'success': False,
+                'message': '파일 처리 중 오류가 발생했습니다.',
+                'errors': processing_errors
+            })
+        
+        # 데이터베이스에 저장
+        result = bulk_create_ingredients(processed_data, update_existing)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'업로드 완료! 생성: {result["created"]}개, 업데이트: {result["updated"]}개, 건너뜀: {result["skipped"]}개',
+            'result': result,
+            'processing_errors': processing_errors
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'파일 처리 중 오류가 발생했습니다: {str(e)}'
+        })

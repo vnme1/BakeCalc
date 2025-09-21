@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>재료 CSV 업로드 - BakeCalc</title>
+    <style>
+        body {
+            font-family: system-ui, Apple SD Gothic Neo, sans-serif;
+            margin: 0;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            opacity: 0.9;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .content {
+            padding: 32px;
+        }
+
+        .upload-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .upload-area {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 40px 20px;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .options {
+            background: #f1f5f9;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 24px 0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .progress-section {
+            display: none;
+            margin: 24px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .result-section {
+            display: none;
+            margin: 24px 0;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .result-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+        }
+
+        .result-error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+        }
+
+        .template-section {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .template-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .column-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .column-item {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .column-required {
+            border-left-color: #dc2626;
+            font-weight: 500;
+        }
+
+        .column-optional {
+            border-left-color: #10b981;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .back-link:hover {
+            color: #374151;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 8px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .column-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 재료 CSV 업로드</h1>
+            <p class="subtitle">Excel/CSV 파일로 재료를 일괄 등록하세요</p>
+        </div>
+
+        <div class="content">
+            <!-- CSRF 토큰 추가 -->
+            {% csrf_token %}
+
+            <a href="/admin/nutrition/ingredient/" class="back-link">
+                ← 재료 관리로 돌아가기
+            </a>
+
+            <!-- 업로드 영역 -->
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('csvFile').click()">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">파일을 선택하거나 여기에 드래그하세요</div>
+                    <div class="upload-hint">CSV, Excel(.xlsx, .xls) 파일 지원 | 최대 10MB</div>
+                    <input type="file" id="csvFile" class="file-input" accept=".csv,.xlsx,.xls" />
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <span id="selectedFile" style="color: #6b7280; font-size: 14px;"></span>
+                </div>
+            </div>
+
+            <!-- 옵션 -->
+            <div class="options">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="updateExisting" />
+                    <label for="updateExisting">기존 재료가 있으면 업데이트 (체크 안 하면 건너뜀)</label>
+                </div>
+            </div>
+
+            <!-- 업로드 버튼 -->
+            <div style="text-align: center; margin: 24px 0;">
+                <button id="uploadBtn" class="btn btn-primary" disabled>
+                    📤 업로드 시작
+                </button>
+                <button id="downloadTemplate" class="btn btn-secondary" style="margin-left: 12px;">
+                    📋 템플릿 다운로드
+                </button>
+            </div>
+
+            <!-- 진행률 -->
+            <div class="progress-section" id="progressSection">
+                <div style="margin-bottom: 8px; font-weight: 500;">업로드 중...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- 결과 -->
+            <div class="result-section" id="resultSection">
+                <div id="resultMessage"></div>
+            </div>
+
+            <!-- CSV 템플릿 가이드 -->
+            <div class="template-section">
+                <div class="template-title">
+                    <span>📝</span>
+                    CSV 파일 형식 가이드
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <strong>필수 컬럼 (반드시 포함해야 함):</strong>
+                </div>
+                <div class="column-list">
+                    <div class="column-item column-required">brand (브랜드)</div>
+                    <div class="column-item column-required">name (제품명)</div>
+                    <div class="column-item column-required">kcal_per100g (칼로리)</div>
+                    <div class="column-item column-required">carbs_per100g (탄수화물)</div>
+                    <div class="column-item column-required">protein_per100g (단백질)</div>
+                    <div class="column-item column-required">fat_per100g (지방)</div>
+                    <div class="column-item column-required">sugar_per100g (당류)</div>
+                    <div class="column-item column-required">sodium_per100g (나트륨)</div>
+                </div>
+
+                <div style="margin: 16px 0;">
+                    <strong>선택 컬럼 (없어도 됨):</strong>
+                </div>
+                <div class="column-list">
+                    <div class="column-item column-optional">unit (단위)</div>
+                    <div class="column-item column-optional">density_g_per_ml (밀도)</div>
+                    <div class="column-item column-optional">price_per_100g (가격)</div>
+                    <div class="column-item column-optional">contains_milk (유제품 포함)</div>
+                    <div class="column-item column-optional">contains_egg (계란 포함)</div>
+                    <div class="column-item column-optional">contains_gluten (글루텐 포함)</div>
+                    <div class="column-item column-optional">contains_nuts (견과류 포함)</div>
+                    <div class="column-item column-optional">contains_soy (대두 포함)</div>
+                    <div class="column-item column-optional">contains_shellfish (갑각류 포함)</div>
+                </div>
+
+                <div style="margin-top: 16px; font-size: 13px; color: #6b7280;">
+                    <strong>💡 팁:</strong><br>
+                    • 알레르기 정보는 true/false 또는 1/0으로 입력<br>
+                    • 숫자 필드에 쉼표(,)가 있어도 자동으로 처리됩니다<br>
+                    • 첫 번째 행은 헤더로 사용됩니다
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+
+        // 파일 선택 처리
+        document.getElementById('csvFile').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('selectedFile').textContent = `선택된 파일: ${file.name}`;
+                document.getElementById('uploadBtn').disabled = false;
+            }
+        });
+
+        // 드래그 앤 드롭 처리
+        const uploadArea = document.getElementById('uploadArea');
+
+        uploadArea.addEventListener('dragover', function (e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function (e) {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function (e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.name.match(/\.(csv|xlsx|xls)$/i)) {
+                    selectedFile = file;
+                    document.getElementById('selectedFile').textContent = `선택된 파일: ${file.name}`;
+                    document.getElementById('uploadBtn').disabled = false;
+                } else {
+                    alert('CSV 또는 Excel 파일만 업로드 가능합니다.');
+                }
+            }
+        });
+
+        // 업로드 처리
+        document.getElementById('uploadBtn').addEventListener('click', function () {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('csv_file', selectedFile);
+            formData.append('update_existing', document.getElementById('updateExisting').checked);
+
+            // UI 업데이트
+            document.getElementById('progressSection').style.display = 'block';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('uploadBtn').disabled = true;
+
+            // 가짜 진행률 (실제 파일 업로드 진행률은 별도 구현 필요)
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += Math.random() * 30;
+                if (progress > 90) progress = 90;
+                document.getElementById('progressFill').style.width = progress + '%';
+            }, 200);
+
+            // AJAX 요청
+            fetch('/upload/csv/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    clearInterval(progressInterval);
+                    document.getElementById('progressFill').style.width = '100%';
+
+                    setTimeout(() => {
+                        document.getElementById('progressSection').style.display = 'none';
+                        document.getElementById('resultSection').style.display = 'block';
+                        document.getElementById('uploadBtn').disabled = false;
+
+                        if (data.success) {
+                            document.getElementById('resultSection').className = 'result-section result-success';
+                            let message = `✅ ${data.message}`;
+
+                            if (data.processing_errors && data.processing_errors.length > 0) {
+                                message += `\n\n⚠️ 일부 행에서 오류가 발생했습니다:\n${data.processing_errors.slice(0, 5).join('\n')}`;
+                                if (data.processing_errors.length > 5) {
+                                    message += `\n... 외 ${data.processing_errors.length - 5}개`;
+                                }
+                            }
+
+                            document.getElementById('resultMessage').innerHTML = message.replace(/\n/g, '<br>');
+                        } else {
+                            document.getElementById('resultSection').className = 'result-section result-error';
+                            let errorMessage = `❌ ${data.message}`;
+
+                            if (data.errors && data.errors.length > 0) {
+                                errorMessage += `\n\n오류 상세:\n${data.errors.slice(0, 10).join('\n')}`;
+                            }
+
+                            document.getElementById('resultMessage').innerHTML = errorMessage.replace(/\n/g, '<br>');
+                        }
+                    }, 500);
+                })
+                .catch(error => {
+                    clearInterval(progressInterval);
+                    document.getElementById('progressSection').style.display = 'none';
+                    document.getElementById('resultSection').style.display = 'block';
+                    document.getElementById('resultSection').className = 'result-section result-error';
+                    document.getElementById('resultMessage').textContent = `네트워크 오류: ${error.message}`;
+                    document.getElementById('uploadBtn').disabled = false;
+                });
+        });
+
+        // 템플릿 다운로드
+        document.getElementById('downloadTemplate').addEventListener('click', function () {
+            // CSV 템플릿 생성 (UTF-8 BOM 추가)
+            const csvContent = `brand,name,kcal_per100g,carbs_per100g,protein_per100g,fat_per100g,sugar_per100g,sodium_per100g,unit,density_g_per_ml,price_per_100g,contains_milk,contains_egg,contains_gluten,contains_nuts,contains_soy,contains_shellfish
+                                서울우유,생크림,335,3,2,35,3,27,g,1.0,2500,true,false,false,false,false,false
+                                백설,설탕,387,100,0,0,100,0,g,,800,false,false,false,false,false,false
+                                곰표,밀가루,348,73,10,1,1,2,g,,500,false,false,true,false,false,false`;
+
+            // UTF-8 BOM 추가 (Excel에서 한글 인식용)
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'ingredients_template.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+</body>
+
+</html>
