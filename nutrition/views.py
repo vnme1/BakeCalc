@@ -99,20 +99,43 @@ def recipe_label(request, recipe_id: int):
     }
     return render(request, 'nutrition/label.html', context)
 
+# def recipe_label_pdf(request, recipe_id: int):
+#     """PDF 라벨 다운로드"""
+#     recipe = get_object_or_404(Recipe.objects.prefetch_related('items__ingredient'), pk=recipe_id)
+#     nutrition_data = compute_recipe_nutrition(recipe, precision=1)
+#     allergens = recipe.get_allergens()
+    
+#     try:
+#         pdf_data = generate_pdf_label(recipe, nutrition_data, allergens)
+#         safe_title = recipe.title.replace(' ', '_').replace('/', '_')[:20]
+#         filename = f"{safe_title}_영양성분표.pdf"
+#         return create_pdf_response(pdf_data, filename)
+        
+#     except Exception as e:
+#         return HttpResponse(f"PDF 생성 중 오류가 발생했습니다: {str(e)}", status=500)
+
+# nutrition/views.py에서 recipe_label_pdf 함수만 교체
+
 def recipe_label_pdf(request, recipe_id: int):
-    """PDF 라벨 다운로드"""
+    """PDF 라벨 다운로드 - 영문 버전"""
     recipe = get_object_or_404(Recipe.objects.prefetch_related('items__ingredient'), pk=recipe_id)
     nutrition_data = compute_recipe_nutrition(recipe, precision=1)
     allergens = recipe.get_allergens()
     
     try:
         pdf_data = generate_pdf_label(recipe, nutrition_data, allergens)
-        safe_title = recipe.title.replace(' ', '_').replace('/', '_')[:20]
-        filename = f"{safe_title}_영양성분표.pdf"
+        
+        # 영문 파일명 생성
+        safe_title = recipe.title.replace(' ', '_').replace('/', '_')[:30]
+        # 특수문자 제거하여 안전한 파일명 생성
+        safe_title = ''.join(c for c in safe_title if c.isalnum() or c in '_-')
+        
+        filename = f"{safe_title}_nutrition_facts.pdf"
         return create_pdf_response(pdf_data, filename)
         
     except Exception as e:
-        return HttpResponse(f"PDF 생성 중 오류가 발생했습니다: {str(e)}", status=500)
+        print(f"PDF 생성 오류: {e}")
+        return HttpResponse(f"PDF generation error: {str(e)}", status=500)
 
 def recipe_public(request, public_id: str):
     """공개 라벨 페이지 (QR 공유용)"""
