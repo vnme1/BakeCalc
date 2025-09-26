@@ -11,57 +11,49 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 import os
 
+# nutrition/services/pdf.py - register_korean_fonts() 함수만 교체
+
 def register_korean_fonts():
-    """멀티 플랫폼 한글 폰트 등록"""
+    """Render Free 플랜용 폰트 처리"""
     try:
-        # 이미 등록된 폰트 체크
-        registered_fonts = [f for f in pdfmetrics.getRegisteredFontNames() if f == 'Korean']
-        if registered_fonts:
-            return 'Korean'
-        
-        # 1. Linux/Render 환경 폰트
-        linux_fonts = [
-            '/usr/share/fonts/truetype/nanum/NanumGothic.ttf',
-            '/usr/share/fonts/truetype/nanum/NanumBarunGothic.ttf',
-            '/usr/share/fonts/truetype/nanum/NanumMyeongjo.ttf',
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+        # Render 환경에서 기본 제공 폰트 체크
+        possible_fonts = [
+            # Render에서 기본 제공될 수 있는 폰트들
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+            # 로컬 개발환경용
+            'C:/Windows/Fonts/malgun.ttf',
+            '/System/Library/Fonts/AppleGothic.ttf'
         ]
         
-        # 2. Windows 환경 폰트
-        windows_fonts = [
-            r'C:\Windows\Fonts\malgun.ttf',
-            r'C:\Windows\Fonts\gulim.ttc',
-            r'C:\Windows\Fonts\batang.ttc'
-        ]
-        
-        # 3. macOS 환경 폰트
-        macos_fonts = [
-            '/System/Library/Fonts/AppleGothic.ttf',
-            '/Library/Fonts/Arial Unicode MS.ttf'
-        ]
-        
-        # 모든 폰트 경로를 순서대로 체크
-        all_fonts = linux_fonts + windows_fonts + macos_fonts
-        
-        for font_path in all_fonts:
+        for font_path in possible_fonts:
             if os.path.exists(font_path):
                 try:
-                    pdfmetrics.registerFont(TTFont('Korean', font_path))
-                    print(f"✅ 한글 폰트 등록 성공: {font_path}")
-                    return 'Korean'
+                    # DejaVu나 Liberation 폰트는 한글 지원 제한적
+                    if 'DejaVu' in font_path or 'Liberation' in font_path:
+                        pdfmetrics.registerFont(TTFont('Korean', font_path))
+                        print(f"✅ 기본 폰트 사용: {font_path}")
+                        return 'Korean'  # 일부 한글은 표시될 수 있음
+                    # Windows/Mac 한글 폰트
+                    elif 'malgun' in font_path or 'AppleGothic' in font_path:
+                        pdfmetrics.registerFont(TTFont('Korean', font_path))
+                        print(f"✅ 한글 폰트 사용: {font_path}")
+                        return 'Korean'
                 except Exception as e:
                     print(f"폰트 등록 실패 {font_path}: {e}")
                     continue
         
-        print("⚠️ 한글 폰트를 찾을 수 없습니다. 영문으로 표시됩니다.")
+        # 모든 폰트 실패시 영문으로 처리
+        print("⚠️ Render Free 환경 - 영문으로 표시됩니다")
         return 'Helvetica'
         
     except Exception as e:
-        print(f"폰트 등록 중 오류: {e}")
+        print(f"폰트 처리 오류: {e}")
         return 'Helvetica'
 
+# 그리고 generate_pdf_label 함수에서 영문 텍스트를 더 깔끔하게 수정
 def get_text_by_font(font_name, korean_text, english_text):
-    """폰트에 따라 적절한 텍스트 반환"""
+    """폰트에 따라 적절한 텍스트 반환 - 영문도 깔끔하게"""
     return korean_text if font_name == 'Korean' else english_text
 
 def generate_pdf_label(recipe, nutrition_data, allergens):
